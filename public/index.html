@@ -13,8 +13,26 @@
     <script type="text/javascript" src="client.js" async></script>
   </head>
   <body>
-    <center>
-      <canvas id="playingarea"></canvas>
-    </center>
+    <div class="leftSidebar">
+      <ul>
+        <li><a href="">Lobby</a></li>
+        <li><a href="">new Game</a></li>
+        <li><a href="">Logout</a></li>
+      </ul>
+    </div>
+
+    <div class="centerarea">
+      <center>
+        <canvas id="playingarea"></canvas>
+      </center>
+    </div>
+    <div class="rightSidebar">
+      <div id="activePlayerDisplay"></div>
+      <ul>
+        <li><a id="resign">Resign</a></li>
+        <li><a id="draw">Offer Draw</a></li>
+        <li><a id="call">Call End</a></li>
+      </ul>
+    </div>
   </body>
 </html>

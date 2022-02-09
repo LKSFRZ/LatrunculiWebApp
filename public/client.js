@@ -8,6 +8,19 @@ boardheight = 8;
 const cvs = document.getElementById("playingarea");
 const c = cvs.getContext("2d");
 
+const activePlayerDisplay = document.getElementById("activePlayerDisplay");
+
+const PlayerLabel = ["None", "White", "Black"];
+
+const directions = [
+  { i: 1, j: 0 },
+  { i: 0, j: 1 },
+  { i: -1, j: 0 },
+  { i: 0, j: -1 },
+];
+
+var legalmoves = [];
+
 cvs.width = Math.min(window.innerWidth, window.innerHeight) * 0.8;
 cvs.height = Math.min(window.innerWidth, window.innerHeight) * 0.8;
 
@@ -30,27 +43,6 @@ cvs.addEventListener("mousemove", function (e) {
   mouse.y = e.offsetY;
 });
 
-class Line {
-  constructor(x0, y0, x1, y1) {
-    this.x0 = x0;
-    this.y0 = y0;
-    this.x1 = x1;
-    this.y1 = y1;
-  }
-
-  draw = () => {
-    c.strokeStyle = "rgb(255, 255, 255)";
-    c.beginPath();
-    c.moveTo(this.x0, this.y0);
-    c.lineTo(this.x1, this.y1);
-    c.stroke();
-    c.closePath();
-    this.update();
-  };
-
-  update = () => {};
-}
-
 class Board {
   constructor() {
     this.state = new Array(boardwidth);
@@ -68,6 +60,45 @@ class Board {
     }
 
     this.selected = { i: undefined, j: undefined };
+    this.activePlayer == 1;
+  }
+
+  onBoard(pos) {
+    return (
+      pos.i >= 0 && pos.i < boardwidth && pos.j >= 0 && pos.j < boardheight
+    );
+  }
+
+  atPos(pos) {
+    if (this.onBoard(pos)) {
+      return this.state[pos.i][pos.j];
+    }
+    return -1;
+  }
+
+  getLegalMoves(from) {
+    var legal = [];
+    // console.log("requested legal moves from ", from);
+    directions.forEach((direction) => {
+      // console.log("direction: ", direction);
+      var dist = 1;
+      var pos = {
+        i: from.i + dist * direction.i,
+        j: from.j + dist * direction.j,
+      };
+      // console.log("checking ", pos, this.onBoard(pos), this.atPos(pos));
+      while (this.atPos(pos) == 0) {
+        // console.log("checking ", pos);
+        legal.push(pos);
+        dist++;
+        pos = {
+          i: from.i + dist * direction.i,
+          j: from.j + dist * direction.j,
+        };
+      }
+    });
+    // console.log("found legal moves", legal);
+    return legal;
   }
 
   drawStone = (x, y, color) => {
@@ -84,12 +115,38 @@ class Board {
     c.closePath();
   };
 
+  drawIndicator = (x, y) => {
+    c.fillStyle = "rgba(50,50,50,.8)";
+    c.beginPath();
+    c.arc(x, y, 0.1 * scale, 0, 2 * Math.PI, false);
+    c.fill();
+    c.closePath();
+  };
+
   draw = () => {
+    if (this.selected.i != undefined) {
+      c.fillStyle = "rgba(50,50,50, .8)";
+
+      c.fillRect(
+        this.selected.i * scale,
+        this.selected.j * scale,
+        scale,
+        scale
+      );
+      legalmoves.forEach((element) => {
+        this.drawIndicator(
+          element.i * scale + scale / 2,
+          element.j * scale + scale / 2
+        );
+        // console.log(element);
+      });
+    }
+
     for (let i = 0; i < boardwidth; i++) {
       for (let j = 0; j < boardheight; j++) {
         if (
           this.state[i][j] != 0 &&
-          !(this.selected.i == i && this.selected.j == j)
+          !(mouse.dragging && this.selected.i == i && this.selected.j == j)
         ) {
           this.drawStone(
             i * scale + scale / 2,
@@ -114,7 +171,7 @@ class Board {
     c.stroke();
     c.closePath();
 
-    if (this.selected.i != undefined) {
+    if (this.selected.i != undefined && mouse.dragging) {
       this.drawStone(
         mouse.x,
         mouse.y,
@@ -142,42 +199,79 @@ class Board {
 const board = new Board();
 
 cvs.addEventListener("mousedown", (e) => {
+  mouse.dragging = true;
   mouse.x = e.offsetX;
   mouse.y = e.offsetY;
-  mouse.dragging = true;
-  let i = Math.floor(mouse.x / scale);
-  let j = Math.floor(mouse.y / scale);
-  if (board.state[i][j] != 0) {
-    board.selected.i = i;
-    board.selected.j = j;
+
+  let clicked = {
+    i: Math.floor(mouse.x / scale),
+    j: Math.floor(mouse.y / scale),
+  };
+
+  var clickedlegal = false;
+  legalmoves.forEach(move => {
+    if(clicked.i == move.i && clicked.j == move.j)
+    {
+      clickedlegal = true;
+    }
+  });
+
+  if (board.selected.i != undefined && clickedlegal) {
+    socket.emit("move", {
+      from: board.selected,
+      to: clicked,
+    });
+    board.selected.i = undefined;
+    board.selected.j = undefined;
+    legalmoves = [];
+  }
+  if (board.state[clicked.i][clicked.j] == board.activePlayer) {
+    board.selected.i = clicked.i;
+    board.selected.j = clicked.j;
+    legalmoves = board.getLegalMoves(board.selected);
   }
 });
 
 cvs.addEventListener("mouseup", (e) => {
   mouse.x = e.offsetX;
   mouse.y = e.offsetY;
-
+  mouse.dragging = false;
+  let clicked = {
+    i: Math.floor(mouse.x / scale),
+    j: Math.floor(mouse.y / scale),
+  };
+  var clickedlegal = false;
+  legalmoves.forEach(move => {
+    if(clicked.i == move.i && clicked.j == move.j)
+    {
+      clickedlegal = true;
+    }
+  });
   if (
-    !(
-      Math.floor(mouse.x / scale) == board.selected.i &&
-      Math.floor(mouse.y / scale) == board.selected.j
-    ) &&
-    board.state[Math.floor(mouse.x / scale)][Math.floor(mouse.y / scale)] == 0
+    !(clicked.i == board.selected.i && clicked.j == board.selected.j) &&
+    board.selected.i != undefined &&
+    clickedlegal
   ) {
     // board.state[Math.floor(mouse.x / scale)][Math.floor(mouse.y / scale)] =
     //   board.state[board.selected.i][board.selected.j];
     // board.state[board.selected.i][board.selected.j] = 0;
-    socket.emit("move", 
-    {
-        from: {i: board.selected.i, j: board.selected.j},
-        to:{i: Math.floor(mouse.x / scale),
-        j:Math.floor(mouse.y / scale)}
-    })
+    socket.emit("move", {
+      from: board.selected,
+      to: clicked,
+    });
   }
+  if (!(clicked.i == board.selected.i && clicked.j == board.selected.j)) {
+    board.selected.i = undefined;
+    board.selected.j = undefined;
+    legalmoves = [];
+  }
+});
 
-  mouse.dragging = false;
-  board.selected.i = undefined;
-  board.selected.j = undefined;
+socket.on("boardUpdate", (data) => {
+  board.state = data.state;
+  activePlayerDisplay.innerText = PlayerLabel[data.active] + " to move";
+  board.activePlayer = data.active;
+  // socket.emit("message", {m: "data recerived", data: data})
 });
 
 function animate() {

@@ -28,6 +28,7 @@ class Board {
     this.activePlayer = 1;
     this.history = [];
     this.score = [2 * width, 2 * width];
+    this.playerIds = [-1, -1];
   }
 
   getLegalMoves() {} // needed for engine, probably no implementation
@@ -57,6 +58,11 @@ class Board {
       }
     });
     return legal;
+  }
+
+  setPlayer(id, player)
+  {
+    this.playerIds[player] = id;
   }
 
   isLegal(from, to) {
@@ -159,6 +165,7 @@ class Board {
       this.state[to.i][to.j] = this.activePlayer;
       this.capture(to);
       this.updateScore();
+      this.history.push({from:from ,to:to});
       this.activePlayer = 3 - this.activePlayer;
     }
   }

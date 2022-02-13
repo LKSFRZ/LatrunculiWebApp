@@ -61,6 +61,7 @@ class Board {
 
     this.selected = { i: undefined, j: undefined };
     this.activePlayer == 1;
+    this.history = [];
   }
 
   onBoard(pos) {
@@ -209,9 +210,8 @@ cvs.addEventListener("mousedown", (e) => {
   };
 
   var clickedlegal = false;
-  legalmoves.forEach(move => {
-    if(clicked.i == move.i && clicked.j == move.j)
-    {
+  legalmoves.forEach((move) => {
+    if (clicked.i == move.i && clicked.j == move.j) {
       clickedlegal = true;
     }
   });
@@ -220,6 +220,7 @@ cvs.addEventListener("mousedown", (e) => {
     socket.emit("move", {
       from: board.selected,
       to: clicked,
+      roomid: id,
     });
     board.selected.i = undefined;
     board.selected.j = undefined;
@@ -241,9 +242,8 @@ cvs.addEventListener("mouseup", (e) => {
     j: Math.floor(mouse.y / scale),
   };
   var clickedlegal = false;
-  legalmoves.forEach(move => {
-    if(clicked.i == move.i && clicked.j == move.j)
-    {
+  legalmoves.forEach((move) => {
+    if (clicked.i == move.i && clicked.j == move.j) {
       clickedlegal = true;
     }
   });
@@ -258,6 +258,8 @@ cvs.addEventListener("mouseup", (e) => {
     socket.emit("move", {
       from: board.selected,
       to: clicked,
+      roomid: id,
+      playerid: getCookie("sessionID"),
     });
   }
   if (!(clicked.i == board.selected.i && clicked.j == board.selected.j)) {
@@ -269,9 +271,41 @@ cvs.addEventListener("mouseup", (e) => {
 
 socket.on("boardUpdate", (data) => {
   board.state = data.state;
-  activePlayerDisplay.innerText = PlayerLabel[data.active] + " to move";
+  board.history = data.history;
   board.activePlayer = data.active;
+  activePlayerDisplay.innerText = "<div>";
+  board.history.forEach((move) => {
+    activePlayerDisplay.innerText += move + "\n";
+  });
+  activePlayerDisplay.innerText+= PlayerLabel[data.active] + " to move </div>";
+  
   // socket.emit("message", {m: "data recerived", data: data})
+});
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(";");
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == " ") {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+socket.emit("handshake", { roomid: id, sessionID: getCookie("sessionID") });
+
+socket.on("signin", (data) => {
+  document.cookie = "sessionID=" + data.sessionID;
+});
+
+socket.on("goto", (data) => {
+  window.open(data.url);
 });
 
 function animate() {

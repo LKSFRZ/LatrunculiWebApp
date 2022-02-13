@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Latrunculi</title>
+    <link href="/styles.css" rel="stylesheet" />
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) == " ") {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+      function createGame() {
+        socket.emit("create", { id: getCookie("sessionID") });
+      }
+
+      socket.on("goto", (data) => {
+        window.location.replace(data.url);
+      });
+    </script>
+  </head>
+  <body>
+    <div class="leftSidebar">
+      <ul>
+        <li><a onclick="createGame()">Make new game</a></li>
+      </ul>
+    </div>
+
+    <div class="centerarea">
+      <center>
+        <div id="Lobby">
+          <ul>
+            <% ids.forEach(function(game) { %>
+            <li>
+              <a href="/game/<%= game %>" class="gamelist"><%= game %></a>
+            </li>
+            <% }); %>
+          </ul>
+        </div>
+      </center>
+    </div>
+    <div class="rightSidebar">
+      <ul>
+        <li><a href="/rules">Rules</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+    </div>
+  </body>
+</html>

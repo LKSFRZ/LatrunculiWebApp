@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/LKSFRZ/LatrunculiWebApp#readme",
   "dependencies": {
+    "ejs": "^3.1.6",
     "express": "^4.17.2",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1"

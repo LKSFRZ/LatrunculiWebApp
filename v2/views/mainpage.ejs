@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Latrunculi</title>
+    <link href="/styles.css" rel="stylesheet" />
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div class="header"></div>
+    <div class="sidebar">
+      <ul>
+        <li><a href="/rules">Rules</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/about">My Games</a></li>
+      </ul>
+    </div>
+    <div class="main">
+      <center>
+        <h1>Game List</h1>
+        <div id="Lobby">
+          
+        </div>
+      </center>
+    </div>
+    <div class="sidebar">
+      <form action="/creategame/" method="post" class="createform">
+        <ul>
+          <li>
+            <label for="game_name">Enter name: </label>
+          </li>
+          <li>
+            <input
+              id="game_name"
+              type="text"
+              name="name_field"
+              value="Friendly game"
+            />
+          </li>
+          <li>
+            <label for="width">width: </label>
+          </li>
+          <li>
+            <input id="width" type="number" name="width_field" value="8" />
+          </li>
+          <li>
+            <label for="height">height: </label>
+          </li>
+          <li>
+            <input id="height" type="number" name="height_field" value="8" />
+          </li>
+          <li>
+            <label for="edge">edge capture: </label>
+            <input
+              id="edge"
+              type="checkbox"
+              name="edge_field"
+              value="true"
+            />
+          </li>
+          <li>
+            <label for="placement">placement phase: </label>
+            <input
+              id="placement"
+              type="checkbox"
+              name="placement_field"
+              value="true"
+            />
+          </li>
+        </ul>
+        <input type="submit" value="create game" />
+      </form>
+    </div>
+
+    <script>
+        const socket = io();
+        const gamelist = document.getElementById("Lobby");
+        console.log("loaded script");
+        socket.on("gamelistupdate", (data) => {
+        console.log("gamelist update event");
+          let content = "<ul>"
+          data.gamelist.forEach(game => {
+              content += "<li><a href='" +game.link +"'> " + game.name +"</a></li>";
+              
+          });
+          console.log(content);
+          gamelist.innerHTML = content + "</ul>";
+        })
+        socket.emit("getupdate", {});
+      </script>
+  </body>
+</html>

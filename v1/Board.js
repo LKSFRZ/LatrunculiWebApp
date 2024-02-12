@@ -34,13 +34,13 @@ class Board {
   getLegalMoves() {} // needed for engine, probably no implementation
 
   onBoard(pos) {
-    return (pos.i >= 0 && pos.i < this.width && pos.j >= 0 && pos.j < this.height);
+    return (
+      pos.i >= 0 && pos.i < this.width && pos.j >= 0 && pos.j < this.height
+    );
   }
 
-  atPos(pos)
-  {
-    if(this.onBoard(pos))
-    {
+  atPos(pos) {
+    if (this.onBoard(pos)) {
       return this.state[pos.i][pos.j];
     }
     return -1;
@@ -48,20 +48,25 @@ class Board {
 
   getLegalMoves(from) {
     var legal = [];
-    directions.forEach(direction => {
+    directions.forEach((direction) => {
       var dist = 1;
-      var pos = {i: from.i + dist * direction.i, j: from.j + dist * direction.j};
+      var pos = {
+        i: from.i + dist * direction.i,
+        j: from.j + dist * direction.j,
+      };
       while (this.onBoard(pos) && this.atPos(pos) == 0) {
-        legal.push({from: from, to: pos});
+        legal.push({ from: from, to: pos });
         dist++;
-        pos = {i: from.i + dist * direction.i, j: from.j + dist * direction.j};
+        pos = {
+          i: from.i + dist * direction.i,
+          j: from.j + dist * direction.j,
+        };
       }
     });
     return legal;
   }
 
-  setPlayer(id, player)
-  {
+  setPlayer(id, player) {
     this.playerIds[player] = id;
   }
 
@@ -126,7 +131,6 @@ class Board {
   capture(to) {
     var anvil, victim;
 
-
     directions.forEach((direction) => {
       anvil = { i: to.i + 2 * direction.i, j: to.j + 2 * direction.j };
       victim = { i: to.i + direction.i, j: to.j + direction.j };
@@ -165,7 +169,7 @@ class Board {
       this.state[to.i][to.j] = this.activePlayer;
       this.capture(to);
       this.updateScore();
-      this.history.push({from:from ,to:to});
+      this.history.push({ from: from, to: to });
       this.activePlayer = 3 - this.activePlayer;
     }
   }

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Latrunculi</title>
+    <link href="/styles.css" rel="stylesheet" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+    </script>
+    <script>var gameID = "<%= id %>"; //used for handshake
+    </script> 
+    <script type="text/javascript" src="/Board.js"></script>
+    <script type="text/javascript" src="/client.js" async></script>
+    <script type="text/javascript" src="/render.js" async></script>
+    
+  </head>
+  <body>
+    <div class="sidebar">
+      <ul>
+        <li><a href="/">Lobby</a></li>
+      </ul>
+    </div>
+
+    <div class="main" id="mainarea">
+      <center>
+        <canvas id="playingarea"></canvas>
+      </center>
+    </div>
+    <div class="sidebar">
+      <div id="scoreboard">
+        <div class="nametag" id="opponentname">Opponent Name</div>
+        <div id="opponenttimer"></div>
+        <div id="opponentscore">16</div>
+        <div id="stones"></div>
+        <div id="history"></div>
+        <div id="ownscore">16</div>
+        <div id="owntimer"></div>
+        <div class="nametag" id="ownname">Own Name</div>
+        <input type="checkbox" id="showterritory" /> Show Territory
+      </div>
+    </div>
+  </body>
+</html>

@@ -9,7 +9,7 @@ var app = express();
 const { body,validationResult } = require('express-validator');
 
 
-PORT = 80;
+PORT = 4000;
 
 var server = app.listen(PORT, function () {
   console.log("listening for requests on port ", PORT);

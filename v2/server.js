@@ -49,8 +49,11 @@ app.post("/creategame/",  (req, res) => {
     while (games[unique] != undefined) {
       unique = Math.floor(Math.random() * 100000000);
     }
+    width = parseInt(req.body["width_field"]);
+    height = parseInt(req.body["height_field"]);
+    console.log("Game size ", width, "x", height);
     games[unique] = {
-      board: new Board(8, 8, true),
+      board: new Board(width, height, true),
       players: [-1, -1],
       names: ["waiting for player", "waiting for player"],
       open: true,
@@ -77,6 +80,7 @@ io.on("connection", (socket) => {
 
   // handshake gets triggered from the game page
   socket.on("handshake", function (data) {
+
     // put socket into room
     socket.join(data.gameID);
 
@@ -85,7 +89,9 @@ io.on("connection", (socket) => {
       socket.emit("signin", { playerID: data.playerID });
     }
 
+    
     var game = games[data.gameID];
+    socket.emit("MetaData", {width : game.board.width, height: game.board.height})
 
     if (game.open && !(game.players[0] == data.playerID || game.players[1] == data.playerID)) {
       var mod = Math.floor(Math.random() * 2);
@@ -113,23 +119,37 @@ io.on("connection", (socket) => {
     socket.emit("setPlayer", {yourcolor: socketcolor});
     socket.emit("boardUpdate", {
       board: game.board,
-      names: game.names
+      names: game.names,
+      hist: game.board.history
     });
-    console.log(game);
+    console.log("Player are ", game.players);
+    console.log("active player",game.board.activePlayer - 1)
+    
   });
 
   socket.on("move", function (data) {
     var game = games[data.gameID];
-    console.log(data);
-    console.log(game);
-    console.log(game.players[game.board.activePlayer - 1]);
-    if (game.players[game.board.activePlayer - 1] == data.playerID) {
+    // console.log(data);
+    // console.log(game);
+    console.log(data.playerID, " = ",game.players[game.board.activePlayer - 1]);
+    if (game.players[game.board.activePlayer - 1] == data.playerID  && game.board.isLegal(data.move.from, data.move.to)) {
       game.board.makeMove(data.move.from, data.move.to);
+      console.log("making move:", data.move)
+      socket.to(data.gameID).emit("boardUpdate", {
+        board: game.board,
+        names: game.names,
+        move : data.move,
+        hist: game.board.history
+      });
       socket.emit("boardUpdate", {
         board: game.board,
-        names: game.names
+        names: game.names,
+        move: data.move,
+        hist: game.board.history
       });
     }
+    console.log(game.players);
+    console.log(game.board.activePlayer - 1)
   });
 
   socket.on("getupdate", (data) => {

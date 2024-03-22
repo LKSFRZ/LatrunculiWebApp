@@ -10,6 +10,7 @@ class Board {
     this.width = width;
     this.height = height;
     this.edgecapture = edgecapture;
+    console.log(width);
     this.state = new Array(width);
     this.territory = new Array(width);
     for (let i = 0; i < width; i++) {
@@ -32,6 +33,30 @@ class Board {
     this.history = [];
     this.score = [2 * width, 2 * width];
     this.winner = 0; // ongoing: 0, white: 1, black: 2, draw: 3
+  }
+
+  reset() {
+    this.state = new Array(this.width);
+    this.territory = new Array(this.width);
+    for (let i = 0; i < this.width; i++) {
+      this.state[i] = new Array(this.height);
+      this.territory[i] = new Array(this.height);
+      for (let j = 0; j < this.height; j++) {
+        this.state[i][j] = 0;
+        this.territory[i][j] = 0;
+      }
+    }
+
+    this.activePlayer = 1;
+    this.opponent = 2;
+    this.history = [];
+    this.score = [2 * this.width, 2 * this.width];
+    this.nstones = [2 * this.width, 2 * this.width];
+    this.winner = 0; // ongoing: 0, white: 1, black: 2, draw: 3
+    this.timecontrol = { startingtime: 300, delay: 10 };
+    this.beginning = 0;
+    this.time = [this.timecontrol.startingtime, this.timecontrol.startingtime];
+    this.updateScore();
   }
 
   getLegalMoves() {} // needed for engine, probably no implementation
@@ -234,6 +259,15 @@ class Board {
           this.opponent
         );
       }
+    }
+  }
+
+  fromHistory(history)
+  {
+    this.reset();
+    for(const m in history)
+    {
+      this.makeMove(m.from, m.to);
     }
   }
 }

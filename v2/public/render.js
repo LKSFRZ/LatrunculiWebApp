@@ -1,18 +1,21 @@
-const cvs = document.getElementById("playingarea");
-const c = cvs.getContext("2d");
+
 
 // const board = new Board(8, 8, true);
 
 const columnnames = "ABCDEFGH";
 
+const cvs = document.getElementById("playingarea");
+const c = cvs.getContext("2d");
+
 cvs.width = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.95);
 cvs.height = cvs.width;
 
-let scale = cvs.width / Math.max(board.width, board.height);
+let scale = cvs.width / 8;
 
 let selected = { i: undefined, j: undefined };
 
-let legalmoves = board.getLegalMoves(-1);
+let legalmoves = [];
+
 
 const showterritory = document.querySelector("#showterritory");
 
@@ -120,7 +123,7 @@ function printHistory() {
   }
   document.getElementById("history").innerText = histstring;
   document.getElementById("history").scrollTop =
-    document.getElementById("history").scrollHeight;
+  document.getElementById("history").scrollHeight;
 }
 
 function updateScoreBoard() {
@@ -140,6 +143,7 @@ function updateScoreBoard() {
 }
 
 function draw() {
+  scale = Math.min(cvs.width / board.width, cvs.height/board.height);
   c.strokeStyle = "rgb(0, 0, 0)";
   c.beginPath();
   for (let i = 0; i <= board.width; i++) {
@@ -185,12 +189,14 @@ function draw() {
       }
     }
   }
+  if (board.activePlayer == amplayer)
   legalmoves.forEach((element) => {
     drawMarker(element.to.i, element.to.j);
   });
   if (selected.i != undefined && mouse.dragging) {
     drawStone(mouse.x, mouse.y, board.atPos(selected));
   }
+  updateScoreBoard()
 }
 
 cvs.addEventListener("mousedown", (e) => {
@@ -198,7 +204,7 @@ cvs.addEventListener("mousedown", (e) => {
     i: Math.floor(e.offsetX / scale),
     j: Math.floor(e.offsetY / scale),
   };
-  // console.log(clicked.i, clicked.j);
+  console.log("Clicked ", clicked.i, clicked.j);
   if (selected.i == undefined) {
     if (board.atPos(clicked) == board.activePlayer) {
       selected = clicked;
@@ -212,6 +218,8 @@ cvs.addEventListener("mousedown", (e) => {
         playerID: getCookie("playerID"),
         move: { from: -1, to: clicked },
       });
+      // TODO: wait for server response
+      // board.makeMove(-1, clicked);
       updateScoreBoard();
     }
   } else {
@@ -221,6 +229,7 @@ cvs.addEventListener("mousedown", (e) => {
         playerID: getCookie("playerID"),
         move: { from: selected, to: clicked },
       });
+      // board.makeMove(selected, clicked);
       updateScoreBoard();
     }
     selected = { i: undefined, j: undefined };
@@ -241,11 +250,19 @@ cvs.addEventListener("mouseup", (e) => {
         playerID: getCookie("playerID"),
         move: { from: selected, to: clicked },
       });
+      // board.makeMove(selected, clicked);
       updateScoreBoard();
     }
     selected = { i: undefined, j: undefined };
     legalmoves = board.getLegalMoves(-1);
   }
+});
+
+socket.on("boardUpdate", (data) => {
+  board.fromHistory(data.hist)
+  legalmoves = board.getLegalMoves(-1);
+  c.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  draw();
 });
 
 function animate() {

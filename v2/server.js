@@ -57,7 +57,8 @@ app.post("/creategame/",  (req, res) => {
       players: [-1, -1],
       names: ["waiting for player", "waiting for player"],
       open: true,
-      gamename: req.body["name_field"]
+      rules: req.body["rules"],
+      gamename: "<b>" + req.body["name_field"] + "</b>" + ' (' + req.body["rules"] + ' ' + width + "x" + height + ' Win by: ' + req.body["WinCon_field"] + "|" + (width*height - req.body["WinCon_field"] + 1) + ")"
     };
     // res.render("gamepage", { id: unique });
     let opengames = [];

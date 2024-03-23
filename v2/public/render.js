@@ -196,7 +196,6 @@ function draw() {
   if (selected.i != undefined && mouse.dragging) {
     drawStone(mouse.x, mouse.y, board.atPos(selected));
   }
-  updateScoreBoard()
 }
 
 cvs.addEventListener("mousedown", (e) => {
@@ -260,6 +259,7 @@ cvs.addEventListener("mouseup", (e) => {
 
 socket.on("boardUpdate", (data) => {
   board.fromHistory(data.hist)
+  updateScoreBoard()
   legalmoves = board.getLegalMoves(-1);
   c.clearRect(0, 0, window.innerWidth, window.innerHeight);
   draw();

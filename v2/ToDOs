@@ -1,10 +1,12 @@
 1. Add Win conditions
+    1.1 add resign button
 2. add user names (easy?)
     2.1 display them in-game
 3. add Rules description
 4. Implement Latrunculi rules (instead of Amboss)
-5. Add marker for player color
+[2024-03-23 Sa] 5. Add marker for player color
 6. Add chat
 7. database for games (long term)
 8. sheduling of games
-[2024-03-23] 9. display settings in game name 
+[2024-03-23 Sa] 9. display settings in game name 
+[2024-03-23 Sa] 10. Let players choose color

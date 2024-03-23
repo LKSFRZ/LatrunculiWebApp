@@ -21,19 +21,33 @@ function getCookie(cname) {
   return "";
 }
 
+function pickcolor(color){
+  socket.emit("setPlayers", {gameID : gameID, playerID: getCookie("playerID"), name: getCookie("playerName"), choice: color});
+  document.getElementById("colorpicker").innerHTML = "";
+}
+
 socket.on("MetaData", (data) => {
   board = new Board(data.width, data.height, true);
 });
 
-socket.emit("handshake", { gameID: gameID, playerID: getCookie("playerID") });
+socket.emit("handshake", { gameID: gameID, playerID: getCookie("playerID"), name: getCookie("playerName")});
 
 socket.on("signin", (data) => {
   document.cookie = "playerID=" + data.playerID;
 });
 
+socket.on("getYourColor", (data) => {
+  console.log("Prompted to ask for my color")
+  socket.emit("whichPlayer", {gameID: gameID, playerID: getCookie("playerID")})
+})
+
+socket.on("ChooseYourColor", (data) => {
+  document.getElementById("colorpicker").innerHTML = "Pick your Color\n<input type=\"button\" value=\"White(" + data.whitewincon + ")\" onclick=\"pickcolor(0);\" /><input type=\"button\" value=\"Black(" + data.blackwincon + ")\" onclick=\"pickcolor(1);\" />";
+})
 
 socket.on("setPlayer", (data) => {
   amplayer = data.yourcolor;
+  updateScoreBoard();
   console.log(amplayer)
 });
 

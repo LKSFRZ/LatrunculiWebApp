@@ -16,6 +16,8 @@ let selected = { i: undefined, j: undefined };
 
 let legalmoves = [];
 
+let stonesymbols = [" ", "⚪", "⚫"];
+
 
 const showterritory = document.querySelector("#showterritory");
 
@@ -129,17 +131,21 @@ function printHistory() {
 function updateScoreBoard() {
   printHistory();
   document.getElementById("opponentscore").innerText =
-    board.nstones[0] +
+    stonesymbols[3 - amplayer]+
+    " " +
+    board.nstones[2 - amplayer] +
     " + " +
-    (board.score[0] - board.nstones[0]) +
+    (board.score[2 - amplayer] - board.nstones[2 - amplayer]) +
     " = " +
-    board.score[0];
+    board.score[2 - amplayer];
   document.getElementById("ownscore").innerText =
-    board.nstones[1] +
+    stonesymbols[amplayer]+
+    " " +
+    board.nstones[amplayer - 1] +
     " + " +
-    (board.score[1] - board.nstones[1]) +
+    (board.score[amplayer - 1] - board.nstones[amplayer - 1]) +
     " = " +
-    board.score[1];
+    board.score[amplayer - 1];
 }
 
 function draw() {
@@ -189,7 +195,7 @@ function draw() {
       }
     }
   }
-  if (board.activePlayer == amplayer)
+  if (board.activePlayer == amplayer && legalmovedisplay.checked)
   legalmoves.forEach((element) => {
     drawMarker(element.to.i, element.to.j);
   });
@@ -260,6 +266,7 @@ cvs.addEventListener("mouseup", (e) => {
 socket.on("boardUpdate", (data) => {
   board.fromHistory(data.hist)
   updateScoreBoard()
+  console.log("Board update ", data)
   legalmoves = board.getLegalMoves(-1);
   c.clearRect(0, 0, window.innerWidth, window.innerHeight);
   draw();

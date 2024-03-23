@@ -58,7 +58,10 @@ app.post("/creategame/",  (req, res) => {
       names: ["waiting for player", "waiting for player"],
       open: true,
       rules: req.body["rules"],
-      gamename: "<b>" + req.body["name_field"] + "</b>" + ' (' + req.body["rules"] + ' ' + width + "x" + height + ' Win by: ' + req.body["WinCon_field"] + "|" + (width*height - req.body["WinCon_field"] + 1) + ")"
+      wincon : req.body["WinCon_field"],
+      gamename: "<b>" + req.body["name_field"] + "</b>" + ' (' + req.body["rules"] + ' ' + width + "x" + height + ' Win by: ' + req.body["WinCon_field"] + "|" + (width*height - req.body["WinCon_field"] + 1) + ")",
+      setter: -1,
+      settername: ""
     };
     // res.render("gamepage", { id: unique });
     let opengames = [];
@@ -95,26 +98,46 @@ io.on("connection", (socket) => {
     socket.emit("MetaData", {width : game.board.width, height: game.board.height})
 
     if (game.open && !(game.players[0] == data.playerID || game.players[1] == data.playerID)) {
-      var mod = Math.floor(Math.random() * 2);
-      if (game.players[mod] == -1) {
-        game.players[mod] = data.playerID;
-        game.names[mod] = data.name;
-      } else if (game.players[1 - mod] == -1) {
-        game.players[1 - mod] = data.playerID;
-        game.names[1 - mod] = data.name;
-      }
+      // Replace this with bidding
+      if(false){
+        var mod = Math.floor(Math.random() * 2);
+        if (game.players[mod] == -1) {
+          game.players[mod] = data.playerID;
+          game.names[mod] = data.name;
+        } else if (game.players[1 - mod] == -1) {
+          game.players[1 - mod] = data.playerID;
+          game.names[1 - mod] = data.name;
+        }
 
-      if (game.players[0] != -1 && game.players[1] != -1) {
-        game.open = false;
+        if (game.players[0] != -1 && game.players[1] != -1) {
+          game.open = false;
+        }
       }
+      if(true){
+      if(game.setter == -1)// current socket is setter
+      {
+        game.setter = data.playerID;
+        game.settername = data.name;
+      }
+      else
+      {
+        if(data.playerID != game.setter)
+        {
+          socket.emit("ChooseYourColor", {whitewincon: game.wincon, blackwincon: (game.board.width * game.board.height) - game.wincon + 1});
+        }
+      }}
     }
-
+    // End Replace
     var socketcolor = 0;
     if (game.players[0] == data.playerID) {
       socketcolor = 1;
     }
-    if (game.players[1] == data.playerID) {
+    else if (game.players[1] == data.playerID) {
       socketcolor = 2;
+    }
+    else
+    {
+      socketcolor = 0;
     }
 
     socket.emit("setPlayer", {yourcolor: socketcolor});
@@ -139,13 +162,11 @@ io.on("connection", (socket) => {
       socket.to(data.gameID).emit("boardUpdate", {
         board: game.board,
         names: game.names,
-        move : data.move,
         hist: game.board.history
       });
       socket.emit("boardUpdate", {
         board: game.board,
         names: game.names,
-        move: data.move,
         hist: game.board.history
       });
     }
@@ -164,6 +185,31 @@ io.on("connection", (socket) => {
     }
     console.log(opengames);
     socket.emit("gamelistupdate", {gamelist: opengames});
+  })
+
+  socket.on("whichPlayer", (data) => {
+    if(games[data.gameID].players[0] == data.playerID)
+    {
+      socket.emit("setPlayer", {yourcolor: 1});
+    }
+    else if(games[data.gameID].players[1] == data.playerID)
+    {
+      socket.emit("setPlayer", {yourcolor: 2});
+    }
+    else
+    {
+      socket.emit("setPlayer", {yourcolor: 0});
+    }
+  })
+
+  socket.on("setPlayers", (data) => {
+    let game = games[data.gameID];
+    game.players[data.choice] = data.playerID;
+    game.players[1 - data.choice] = game.setter;
+    game.names[data.choice] = data.name;
+    game.names[1 - data.choice] = game.settername;
+    socket.emit("getYourColor", {});
+    socket.to(data.gameID).emit("getYourColor", {});
   })
 
 });

@@ -192,7 +192,9 @@ class Board {
           //floodfill
           var neighbors = [];
           var borderswhite = false;
-          var bordersblack = true;
+          var bordersblack = false;
+          var seeswhite = false;
+          var seessblack = false;
           neighbors = neighbors.concat(this.nextto({ i: i, j: j }));
           while (neighbors.length > 0) {
             let neighbor = neighbors.pop();

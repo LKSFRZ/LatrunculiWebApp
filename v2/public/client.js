@@ -33,7 +33,7 @@ socket.on("MetaData", (data) => {
 socket.emit("handshake", { gameID: gameID, playerID: getCookie("playerID"), name: getCookie("playerName")});
 
 socket.on("signin", (data) => {
-  document.cookie = "playerID=" + data.playerID;
+  document.cookie = "playerID=" + data.playerID + ";path=/";
 });
 
 socket.on("getYourColor", (data) => {

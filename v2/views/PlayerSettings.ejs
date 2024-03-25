@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Latrunculi</title>
+    <link href="/styles.css" rel="stylesheet" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="CookieMonster.js"></script>
+  </head>
+  <body>
+    <div class="header"></div>
+    <div class="sidebar">
+      <ul>
+        <li><a href="/">Lobby</a></li>
+      </ul>
+    </div>
+    <div class="main">
+      <center>
+        <h1>Settings</h1>
+        <div id="settings">
+          <form method="post" class="createform">
+          <ul>
+            <li>
+              <label for="player_name">Enter name: </label>
+            </li>
+            <li>
+              <input
+                id="player_name"
+                type="text"
+                name="name_field"
+                value="Anon"
+              />
+            </li>
+          </ul>
+          <br>
+          <input type="button" value="change name" onclick="SetName()"/>
+        </form>
+        </div>
+      </center>
+    </div>
+    <div class="sidebar">
+    </div>
+
+    <script src="settings.js"></script>
+  </body>
+</html>

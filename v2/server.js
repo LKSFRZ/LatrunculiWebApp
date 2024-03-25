@@ -42,6 +42,15 @@ app.get("/game/:id", (req, res) => {
   }
 });
 
+app.get("/mygames/", (req, res) => {
+    res.render("ActiveGamesOverview", {}); // id is used in handshake
+  }
+);
+
+app.get("/setname/", (req, res) => {
+  res.render("PlayerSettings", {}); // id is used in handshake
+}
+);
 
 
 app.post("/creategame/",  (req, res) => {
@@ -118,6 +127,7 @@ io.on("connection", (socket) => {
       {
         game.setter = data.playerID;
         game.settername = data.name;
+        game.names[0] = data.name;
       }
       else
       {
@@ -131,13 +141,16 @@ io.on("connection", (socket) => {
     var socketcolor = 0;
     if (game.players[0] == data.playerID) {
       socketcolor = 1;
+      game.names[0] = data.name;
     }
     else if (game.players[1] == data.playerID) {
       socketcolor = 2;
+      game.names[1] = data.name;
     }
     else
     {
-      socketcolor = 0;
+      socketcolor = 1;
+      game.names[0] = data.name;
     }
 
     socket.emit("setPlayer", {yourcolor: socketcolor});
@@ -208,8 +221,33 @@ io.on("connection", (socket) => {
     game.players[1 - data.choice] = game.setter;
     game.names[data.choice] = data.name;
     game.names[1 - data.choice] = game.settername;
+    game.open = false;
     socket.emit("getYourColor", {});
     socket.to(data.gameID).emit("getYourColor", {});
+    socket.emit("boardUpdate", {
+      board: game.board,
+      names: game.names,
+      hist: game.board.history
+    });
+    socket.to(data.gameID).emit("boardUpdate", {
+      board: game.board,
+      names: game.names,
+      hist: game.board.history
+    });
+  })
+
+  socket.on("getmygames", (data) => {
+    var gamelist = [];
+    for(const  key in games)
+    {
+        console.log("Request from ", data.playerID)
+        console.log("Game ", key, "Players" , games[key].players[0] , games[key].players[1], games[key].setter)
+        if(games[key].players[0] == data.playerID || games[key].players[1] == data.playerID || games[key].setter == data.playerID )
+        {
+            gamelist.push({link: "/game/" + key, name: games[key].gamename});
+        }
+    }
+    socket.emit("mygamelistupdate", {gamelist : gamelist})
   })
 
 });

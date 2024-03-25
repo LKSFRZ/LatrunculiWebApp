@@ -16,7 +16,9 @@ let selected = { i: undefined, j: undefined };
 
 let legalmoves = [];
 
-let stonesymbols = [" ", "⚪", "⚫"];
+let stonesymbols = ["⚪", "⚫"];
+
+let playernames = ["waiting for player", "waiting for player"];
 
 
 const showterritory = document.querySelector("#showterritory");
@@ -108,6 +110,7 @@ function markSquare(square, color) {
 function printHistory() {
   let n = 1;
   let histstring = "";
+  
   board.history.forEach((element) => {
     if (n % 2) {
       histstring += (n + 1) / 2 + ": " + moveNotation(element);
@@ -130,8 +133,10 @@ function printHistory() {
 
 function updateScoreBoard() {
   printHistory();
+  document.getElementById("opponentname").innerText = playernames[2 - amplayer];
+  document.getElementById("ownname").innerText = playernames[amplayer - 1];
   document.getElementById("opponentscore").innerText =
-    stonesymbols[3 - amplayer]+
+    stonesymbols[2 - amplayer]+
     " " +
     board.nstones[2 - amplayer] +
     " + " +
@@ -139,7 +144,7 @@ function updateScoreBoard() {
     " = " +
     board.score[2 - amplayer];
   document.getElementById("ownscore").innerText =
-    stonesymbols[amplayer]+
+    stonesymbols[amplayer - 1]+
     " " +
     board.nstones[amplayer - 1] +
     " + " +
@@ -266,6 +271,8 @@ cvs.addEventListener("mouseup", (e) => {
 socket.on("boardUpdate", (data) => {
   board.fromHistory(data.hist)
   updateScoreBoard()
+  playernames[0] = data.names[0];
+  playernames[1] = data.names[1];
   console.log("Board update ", data)
   legalmoves = board.getLegalMoves(-1);
   c.clearRect(0, 0, window.innerWidth, window.innerHeight);

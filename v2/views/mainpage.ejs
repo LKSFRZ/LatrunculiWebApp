@@ -13,13 +13,14 @@
     <div class="sidebar">
       <ul>
         <li><a href="/rules">Rules</a></li>
-          <li><a href="/about">About</a></li>
-          <li><a href="/about">My Games</a></li>
+        <li><a href="/mygames">My Games</a></li>
+        <li><a href="/setname">Set Name</a></li>
       </ul>
     </div>
     <div class="main">
       <center>
-        <h1>Game List</h1>
+        <h1>Latrunculi</h1>
+        <h2>Open Games</h2>
         <div id="Lobby">
           
         </div>
@@ -103,6 +104,8 @@
     <script>
         const socket = io();
         const gamelist = document.getElementById("Lobby");
+
+        
         console.log("loaded script");
         socket.on("gamelistupdate", (data) => {
         console.log("gamelist update event");
